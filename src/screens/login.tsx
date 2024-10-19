@@ -89,7 +89,7 @@ const Login = () => {
             <View style={[tw`w-full flex px-5`]}>
               <View
                 style={[
-                  tw`relative w-full my-4 flex items-center justify-center`,
+                  tw`relative w-full my-2 flex items-center justify-center`,
                 ]}>
                 <TextInput
                   style={[
@@ -143,7 +143,7 @@ const Login = () => {
                   leftText={'CheckBox'}
                   onClick={() => setIsChecked(!isChecked)}
                 />
-                <Text style={[tw`text-[#252525] text-lg`]}>Rember me</Text>
+                <Text style={[tw`text-[#252525] text-lg`]}>Remember me</Text>
               </View>
               <Text style={[tw`text-[#FF3951] text-lg`]}>Forgot password?</Text>
             </View>
@@ -167,7 +167,7 @@ const Login = () => {
             )}
 
             <Text style={[tw`text-[#252525] text-lg text-center my-2`]}>
-              New Member? <Text style={[tw`text-[#FF3951]`]}>Register now</Text>
+              New Member? <Text style={[tw`text-[#FF3951]`]} onPress={()=>navigation.navigate('Register')}>Register now</Text>
             </Text>
           </View>
         </View>
