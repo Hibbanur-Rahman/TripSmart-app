@@ -5,13 +5,17 @@ import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
+import { useDispatch } from 'react-redux';
+import { handleIsAuthenticated } from '../redux/slices/auth/authSlice';
 
 const Account = () => {
+  const dispatch=useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.clear();
+    dispatch(handleIsAuthenticated({isAuthenticated:false}));
     navigation.navigate('Login');
   };
   return (

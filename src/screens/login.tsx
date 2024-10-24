@@ -19,7 +19,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
+import { useDispatch } from 'react-redux';
+import { handleIsAuthenticated } from '../redux/slices/auth/authSlice';
 const Login = () => {
+  const dispatch=useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isPasswordShow, setIsPasswordShow] = useState(false);
@@ -40,7 +43,9 @@ const Login = () => {
         setLoader(false);
         console.log(response.data);
         await AsyncStorage.setItem('access_token', response.data.data.token);
+        dispatch(handleIsAuthenticated({isAuthenticated:true}));
         navigation.navigate('Home');
+
       }
     } catch (error) {
       setLoader(false);

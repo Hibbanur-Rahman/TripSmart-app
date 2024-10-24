@@ -16,12 +16,14 @@ import {RootStackParamList} from '../../App';
 import SlideImg1 from '../assets/images/start-screen-1.svg';
 import SlideImg2 from '../assets/images/start-screen-2.svg';
 import SlideImg3 from '../assets/images/start-screen-3.svg';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 const StartScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [slideActive, setSlideActive] = useState(1);
+  const [token, setToken] = useState<String | null>(null);
+  
   const handleSlideActive = () => {
     if (slideActive >= 3) {
       navigation.navigate('Login');
@@ -29,6 +31,20 @@ const StartScreen = () => {
     }
     setSlideActive(slideActive + 1);
   };
+
+   //handle fetch token
+   const handleFetchToken = async () => {
+    const storedToken = await AsyncStorage.getItem('access_token');
+    setToken(storedToken);
+  };
+
+  //fetch token when component mounts
+  useEffect(() => {
+    handleFetchToken();
+    if(token){
+      navigation.navigate('Home')
+    }
+  });
   return (
     <SafeAreaView style={[tw`h-full w-full`]}>
       <ScrollView

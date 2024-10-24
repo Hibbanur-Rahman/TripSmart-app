@@ -6,9 +6,44 @@ import {
   View,
   Image,
   TextInput,
+  TouchableOpacity,
 } from 'react-native';
 import tw from 'twrnc';
+import {useEffect, useState} from 'react';
+import axios from 'axios';
+import API_URL from '../../environmentVariables';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../../App';
+import {useDispatch, useSelector} from 'react-redux';
+import {handleIsAuthenticated} from '../redux/slices/auth/authSlice';
 const Home = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [token, setToken] = useState<String | null>(null);
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated,
+  );
+  //handle fetch token
+  const handleFetchToken = async () => {
+    const storedToken = await AsyncStorage.getItem('access_token');
+    setToken(storedToken);
+  };
+
+  //fetch token when component mounts
+  useEffect(() => {
+    handleFetchToken();
+    if (!isAuthenticated) {
+      navigation.navigate('Login');
+    }
+  }, [isAuthenticated]);
+  useEffect(() => {
+    handleFetchToken();
+    if (!isAuthenticated) {
+      navigation.navigate('Login');
+    }
+  }, []);
   return (
     <SafeAreaView style={tw`h-full pt-4 px-4 bg-white`}>
       <ScrollView
@@ -31,12 +66,12 @@ const Home = () => {
               Explore the world
             </Text>
           </View>
-          <View>
+          <TouchableOpacity onPress={() => navigation.navigate('Account')}>
             <Image
               style={tw`h-[60px] w-[60px] rounded-full border`}
               source={require('../assets/images/profile-img.png')}
             />
-          </View>
+          </TouchableOpacity>
         </View>
         <View style={tw`w-full mt-8`}>
           <TextInput
@@ -147,7 +182,6 @@ const Home = () => {
                 </View>
               </View>
             </View>
-          
           </View>
         </ScrollView>
       </ScrollView>

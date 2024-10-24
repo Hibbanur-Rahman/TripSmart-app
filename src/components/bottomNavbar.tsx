@@ -9,8 +9,13 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSelector} from 'react-redux';
 
 const BottomNavbar = () => {
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated,
+  );
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [token, setToken] = useState<string | null>(null);
@@ -24,10 +29,17 @@ const BottomNavbar = () => {
   //fetch token when component mounts
   useEffect(() => {
     handleFetchToken();
-  });
+  }, []);
 
-  //if no toekn, hide the navbar
-  if(!token){
+  //fetch token when component mounts
+  useEffect(() => {
+    handleFetchToken();
+    console.log("is authenticated in navbar:",isAuthenticated)
+  }, [isAuthenticated]);
+
+  
+  //if no token, hide the navbar
+  if (!token) {
     return null;
   }
   return (
