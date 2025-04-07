@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import "./global.css"
+import './global.css';
 import {enableScreens} from 'react-native-screens';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
@@ -76,49 +76,51 @@ function App(): React.JSX.Element {
   return (
     <NavigationContainer>
       <SafeAreaView style={tw`flex-1 bg-white`}>
-        <Stack.Navigator initialRouteName={authInitialRouteName}>
-          <Stack.Screen
-            name="Layout"
-            component={Layout}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="Home"
-            component={Home}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="Account"
-            component={Account}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="Trip"
-            component={Trip}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="StartScreen"
-            component={StartScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="PlaceDetail"
-            component={PlaceDetail}
-            options={{headerShown: false}}
-          />
+        {authInitialRouteName && (
+          <Stack.Navigator initialRouteName={authInitialRouteName}>
+            <Stack.Screen
+              name="Layout"
+              component={Layout}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Home"
+              component={Home}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Account"
+              component={Account}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Trip"
+              component={Trip}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="StartScreen"
+              component={StartScreen}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="PlaceDetail"
+              component={PlaceDetail}
+              options={{headerShown: false}}
+            />
 
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="Register"
-            component={Register}
-            options={{headerShown: false}}
-          />
-        </Stack.Navigator>
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Register"
+              component={Register}
+              options={{headerShown: false}}
+            />
+          </Stack.Navigator>
+        )}
       </SafeAreaView>
     </NavigationContainer>
   );

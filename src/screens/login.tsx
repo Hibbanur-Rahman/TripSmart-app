@@ -6,178 +6,257 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
 } from 'react-native';
 import tw from 'twrnc';
-import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CheckBox from 'react-native-check-box';
-
-import LoginImg from '../assets/images/login.svg';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useEffect, useState} from 'react';
 import axios from 'axios';
-import API_URL from '../../environmentVariables';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
-import { useDispatch } from 'react-redux';
-import { handleIsAuthenticated } from '../redux/slices/auth/authSlice';
+import {useDispatch} from 'react-redux';
+import {handleIsAuthenticated} from '../redux/slices/auth/authSlice';
+import LoginImg from '../assets/images/login.svg';
+import API_URL from '../../environmentVariables';
 const Login = () => {
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [isPasswordShow, setIsPasswordShow] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
-  const [loader, setLoader] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isRememberMe, setIsRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState<String | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
   const handleLogin = async () => {
-    setLoader(true);
+    setError(null);
+    setEmailError(null);
+    setPasswordError(null);
+
+    // Basic validation
+    let isValid = true;
+
+    if (!email) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email');
+      isValid = false;
+    }
+
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (password.length < 4) {
+      setPasswordError('Password must be at least 6 characters');
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
+    setIsLoading(true);
     try {
       const response = await axios.post(`${API_URL}/login`, {
         email: email,
         password: password,
       });
+
       if (response.status === 200) {
-        setLoader(false);
-        console.log(response.data);
         await AsyncStorage.setItem('access_token', response.data.data.token);
-        dispatch(handleIsAuthenticated({isAuthenticated:true}));
+        dispatch(handleIsAuthenticated({isAuthenticated: true}));
         navigation.navigate('Layout');
-
       }
-    } catch (error) {
-      setLoader(false);
-      console.error(error);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || 'Login failed. Please try again.',
+      );
+    } finally {
+      setIsLoading(false);
     }
-  };
-  //handle fetch token
-  const handleFetchToken = async () => {
-    const storedToken = await AsyncStorage.getItem('access_token');
-    setToken(storedToken);
   };
 
-  //fetch token when component mounts
   useEffect(() => {
-    handleFetchToken();
-    if(token){
-      navigation.navigate('Layout')
-    }
-  });
+    const checkToken = async () => {
+      const storedToken = await AsyncStorage.getItem('access_token');
+      if (storedToken) {
+        navigation.navigate('Layout');
+      }
+    };
+    checkToken();
+  }, []);
+
   return (
-    <SafeAreaView style={[tw`h-full w-full bg-white`]}>
-      <ScrollView style={[tw`h-full w-full bg-white flex `]}>
-        <View style={[tw`flex h-full w-full justify-between flex-1`]}>
-          <View style={[tw`w-full h-full flex  relative `]}>
-            <View
-              style={[
-                tw`flex flex-row w-full justify-center items-center mt-5`,
-              ]}>
+    <SafeAreaView style={tw`flex-1 bg-white`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={tw`flex-1`}>
+        <ScrollView
+          contentContainerStyle={tw`flex-grow justify-center`}
+          keyboardShouldPersistTaps="handled">
+          <View style={tw`px-8 py-6`}>
+            {/* Header */}
+            <View style={tw`items-center mb-8 mt-[-100px]`}>
               <LoginImg
                 width={400}
                 height={300}
                 style={[tw`relative left-[60px]`]}
               />
-            </View>
-            <View
-              style={[
-                tw`w-full flex relative mt-[-135px] mb-[50px] justify-center items-center`,
-              ]}>
-              <Text style={[tw`text-3xl text-[#252525] font-bold`]}>
-                Welcome back
+              <Text style={tw`text-3xl font-bold text-gray-900 mt-[-100px]`}>
+                Welcome Back
               </Text>
-              <Text style={[tw`text-[#252525] text-lg text-black `]}>
-                Sign in to access your account
+              <Text style={tw`text-lg text-gray-600 mt-2`}>
+                Sign in to continue your journey
               </Text>
             </View>
-            <View style={[tw`w-full flex px-5`]}>
+
+            {/* Error Message */}
+            {error && (
+              <View
+                style={tw`bg-red-100 p-3 rounded-lg mb-4 flex-row items-center`}>
+                <MaterialIcons name="error-outline" size={20} color="#dc2626" />
+                <Text style={tw`text-red-700 ml-2`}>{error}</Text>
+              </View>
+            )}
+
+            {/* Email Input */}
+            <View style={tw`mb-4`}>
+              <Text style={tw`text-gray-700 mb-2 font-medium`}>
+                Email Address
+              </Text>
               <View
                 style={[
-                  tw`relative w-full my-2 flex items-center justify-center`,
+                  tw`border rounded-xl px-4 flex-row items-center`,
+                  emailError
+                    ? tw`border-red-500 bg-red-50`
+                    : tw`border-gray-300 bg-gray-50`,
                 ]}>
                 <TextInput
-                  style={[
-                    tw`w-full border-[1px] border-[#D2D2D2] rounded-2xl bg-[rgba(196,196,196,0.2)] text-[rgba(0,0,0,0.5)] px-4 py-4 text-lg`,
-                  ]}
-                  placeholder="Enter your email"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  style={tw`flex-1 py-3 text-lg text-gray-900`}
+                  placeholder="your@email.com"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={text => {
+                    setEmail(text);
+                    if (emailError) setEmailError(null);
+                  }}
                 />
-                <EvilIcons
-                  name="envelope"
-                  style={[
-                    tw` text-[rgba(0,0,0,0.5)] absolute right-[10px] top-[10px]`,
-                  ]}
-                  size={40}
-                />
+                <MaterialIcons name="email" size={20} color="#6b7280" />
               </View>
+              {emailError && (
+                <Text style={tw`text-red-500 mt-1 text-sm`}>{emailError}</Text>
+              )}
+            </View>
+
+            {/* Password Input */}
+            <View style={tw`mb-4`}>
+              <Text style={tw`text-gray-700 mb-2 font-medium`}>Password</Text>
               <View
                 style={[
-                  tw`relative w-full mt-4 flex items-center justify-center`,
+                  tw`border rounded-xl px-4 flex-row items-center`,
+                  passwordError
+                    ? tw`border-red-500 bg-red-50`
+                    : tw`border-gray-300 bg-gray-50`,
                 ]}>
                 <TextInput
-                  style={[
-                    tw`w-full border-[1px] border-[#D2D2D2] rounded-2xl bg-[rgba(196,196,196,0.2)] text-[rgba(0,0,0,0.5)] px-4 py-4 text-lg`,
-                  ]}
-                  placeholder="Password"
-                  placeholderTextColor="rgba(0,0,0,0.5)"
+                  style={tw`flex-1 py-3 text-lg text-gray-900`}
+                  placeholder="••••••••"
+                  placeholderTextColor="#9ca3af"
                   autoCapitalize="none"
-                  secureTextEntry={!isPasswordShow}
+                  secureTextEntry={!isPasswordVisible}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={text => {
+                    setPassword(text);
+                    if (passwordError) setPasswordError(null);
+                  }}
                 />
-                <Ionicons
-                  onPress={() => setIsPasswordShow(!isPasswordShow)}
-                  name={isPasswordShow ? 'eye-outline' : 'eye-off-outline'}
-                  style={[
-                    tw` text-[rgba(0,0,0,0.5)] absolute right-[14px] top-[10px]`,
-                  ]}
-                  size={35}
-                />
+                <TouchableOpacity
+                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                  <Ionicons
+                    name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+                    size={20}
+                    color="#6b7280"
+                  />
+                </TouchableOpacity>
               </View>
+              {passwordError && (
+                <Text style={tw`text-red-500 mt-1 text-sm`}>
+                  {passwordError}
+                </Text>
+              )}
             </View>
-            <View style={[tw`w-full flex flex-row justify-between px-5 my-3`]}>
-              <View style={[tw`flex flex-row gap-[30px] items-center`]}>
-                <CheckBox
-                  style={[tw`flex border-[#CBCBCB] p-0 flex-1`]}
-                  isChecked={isChecked}
-                  leftText={'CheckBox'}
-                  onClick={() => setIsChecked(!isChecked)}
-                />
-                <Text style={[tw`text-[#252525] text-lg`]}>Remember me</Text>
-              </View>
-              <Text style={[tw`text-[#FF3951] text-lg`]}>Forgot password?</Text>
-            </View>
-          </View>
-          <View style={[tw`px-5 w-full`]}>
-            {loader ? (
-              <TouchableOpacity
-                style={[
-                  tw`w-full py-4 rounded-xl bg-[#FF3951] flex justify-center items-center`,
-                ]}>
-                <ActivityIndicator size={20} color={'#fff'}/>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={handleLogin}
-                style={[
-                  tw`w-full py-4 rounded-xl bg-[#FF3951] flex justify-center items-center`,
-                ]}>
-                <Text style={[tw`text-white text-xl`]}>Next</Text>
-              </TouchableOpacity>
-            )}
 
-            <Text style={[tw`text-[#252525] text-lg text-center my-2`]}>
-              New Member? <Text style={[tw`text-[#FF3951]`]} onPress={()=>navigation.navigate('Register')}>Register now</Text>
-            </Text>
+            {/* Remember Me & Forgot Password */}
+            <View style={tw`flex-row justify-between items-center mb-6`}>
+              <TouchableOpacity
+                onPress={() => setIsRememberMe(!isRememberMe)}
+                style={tw`flex-row items-center`}>
+                <View
+                  style={[
+                    tw`w-5 h-5 rounded-md border mr-2 flex items-center justify-center`,
+                    isRememberMe
+                      ? tw`bg-indigo-600 border-indigo-600`
+                      : tw`border-gray-400`,
+                  ]}>
+                  {isRememberMe && (
+                    <MaterialIcons name="check" size={16} color="white" />
+                  )}
+                </View>
+                <Text style={tw`text-gray-700`}>Remember me</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ForgotPassword')}>
+                <Text style={tw`text-[#FF3951] font-medium`}>
+                  Forgot password?
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              onPress={handleLogin}
+              style={tw`bg-[#FF3951] rounded-xl py-4 flex-row justify-center items-center shadow-lg`}
+              disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Text style={tw`text-white font-bold text-lg`}>Sign In</Text>
+                  <MaterialIcons
+                    name="arrow-forward"
+                    size={20}
+                    color="white"
+                    style={tw`ml-2`}
+                  />
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Sign Up Link */}
+            <View style={tw`flex-row justify-center mt-4`}>
+              <Text style={tw`text-gray-600`}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={tw`text-[#FF3951] font-bold`}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

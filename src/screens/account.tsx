@@ -10,8 +10,19 @@ import {
 import tw from 'twrnc';
 import { User, Settings, Bell, Clock, Headphones, LogOut, CreditCard, Heart, Shield, ChevronRight } from 'lucide-react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootStackParamList } from '../../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
 const ProfileScreen = () => {
+  const navigation =
+      useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const handleLogout=async()=>{
+    console.log('Logout button clicked');
+    await AsyncStorage.clear();
+    navigation.navigate('Login')
+  }
   const menuItems = [
     {
       id: 1,
@@ -153,7 +164,7 @@ const ProfileScreen = () => {
         </View>
         
         {/* Log Out Button */}
-        <TouchableOpacity style={tw`mx-4 mt-6 mb-8 bg-white py-3.5 px-4 rounded-xl shadow-sm flex-row items-center justify-center`}>
+        <TouchableOpacity style={tw`mx-4 mt-6 mb-8 bg-white py-3.5 px-4 rounded-xl shadow-sm flex-row items-center justify-center`} onPress={()=>handleLogout()}>
           <LogOut size={20} color="#EF4444" style={tw`mr-2`} />
           <Text style={tw`text-red-500 font-medium text-base`}>Log Out</Text>
         </TouchableOpacity>
