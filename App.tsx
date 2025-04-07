@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import "./global.css"
 import {enableScreens} from 'react-native-screens';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
