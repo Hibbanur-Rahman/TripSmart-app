@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   Text,
@@ -44,7 +45,7 @@ const Login = () => {
         console.log(response.data);
         await AsyncStorage.setItem('access_token', response.data.data.token);
         dispatch(handleIsAuthenticated({isAuthenticated:true}));
-        navigation.navigate('Home');
+        navigation.navigate('Layout');
 
       }
     } catch (error) {
@@ -62,7 +63,7 @@ const Login = () => {
   useEffect(() => {
     handleFetchToken();
     if(token){
-      navigation.navigate('Home')
+      navigation.navigate('Layout')
     }
   });
   return (
@@ -159,7 +160,7 @@ const Login = () => {
                 style={[
                   tw`w-full py-4 rounded-xl bg-[#FF3951] flex justify-center items-center`,
                 ]}>
-                <Text style={[tw`text-white text-xl`]}>Logging........</Text>
+                <ActivityIndicator size={20} color={'#fff'}/>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
